@@ -140,8 +140,11 @@ public class MainJavaActivity extends AppCompatActivity implements NavigationVie
                 String name = object.getString("first_name");
                 String lastName = object.getString("last_name");
 
-                Picasso.with(getApplicationContext()).load(photo).into(userPhoto);
-                userName.setText(name + " " + lastName);
+                Picasso.with(getApplicationContext())
+                        .load(photo)
+                        .transform(new CircleTransform())
+                        .into(userPhoto);
+                userName.setText(String.format("%s %s", name, lastName));
             } catch (JSONException e) {
                 e.printStackTrace();
                 Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
