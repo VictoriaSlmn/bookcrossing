@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.getItemId()
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_search) {
             return true
         }
         return super.onOptionsItemSelected(item)
