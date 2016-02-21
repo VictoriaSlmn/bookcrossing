@@ -5,7 +5,7 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/vk_color</item>
         <item name="colorPrimaryDark">@color/vk_share_top_blue_color</item>
-        <item name="colorAccent">@color/vk_light_color</item>
+        <item name="colorAccent">@color/pink</item>
     </style>
 
     <style name="AppTheme.NoActionBar">

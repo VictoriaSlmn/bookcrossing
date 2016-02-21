@@ -68,12 +68,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
-            R.id.nav_camera -> Toast.makeText(this, "camera", Toast.LENGTH_SHORT).show()
-            R.id.nav_gallery -> Toast.makeText(this, "gallery", Toast.LENGTH_SHORT).show()
-            R.id.nav_slideshow -> Toast.makeText(this, "slideshow", Toast.LENGTH_SHORT).show()
-            R.id.nav_manage -> Toast.makeText(this, "manage", Toast.LENGTH_SHORT).show()
-            R.id.nav_share -> Toast.makeText(this, "share", Toast.LENGTH_SHORT).show()
-            R.id.nav_send -> Toast.makeText(this, "send", Toast.LENGTH_SHORT).show()
+//            R.id.nav_main -> Toast.makeText(this, "camera", Toast.LENGTH_SHORT).show()
+//            R.id.nav_gallery -> Toast.makeText(this, "gallery", Toast.LENGTH_SHORT).show()
+//            R.id.nav_slideshow -> Toast.makeText(this, "slideshow", Toast.LENGTH_SHORT).show()
+//            R.id.nav_manage -> Toast.makeText(this, "manage", Toast.LENGTH_SHORT).show()
+//            R.id.nav_share -> Toast.makeText(this, "share", Toast.LENGTH_SHORT).show()
+//            R.id.nav_send -> Toast.makeText(this, "send", Toast.LENGTH_SHORT).show()
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return true

@@ -39,6 +39,7 @@ import org.json.JSONObject;
 public class MainJavaActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ImageView userPhoto;
     private TextView userName;
+    private NavigationView nav_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +61,7 @@ public class MainJavaActivity extends AppCompatActivity implements NavigationVie
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer_layout.setDrawerListener(toggle);
         toggle.syncState();
-        NavigationView nav_view = (NavigationView) findViewById(R.id.nav_view);
+        nav_view = (NavigationView) findViewById(R.id.nav_view);
         nav_view.setNavigationItemSelectedListener(this);
         userPhoto = (ImageView) nav_view.getHeaderView(0).findViewById(R.id.imageView);
         userName = (TextView) nav_view.getHeaderView(0).findViewById(R.id.textView);
@@ -156,6 +157,9 @@ public class MainJavaActivity extends AppCompatActivity implements NavigationVie
                         .transform(new CircleTransform())
                         .into(userPhoto);
                 userName.setText(String.format("%s %s", name, lastName));
+                Menu menu = nav_view.getMenu();
+                menu.clear();
+                getMenuInflater().inflate(R.menu.activity_main_auth_drawer, menu);
             } catch (JSONException e) {
                 e.printStackTrace();
                 Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
