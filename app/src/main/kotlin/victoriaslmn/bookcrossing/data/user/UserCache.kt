@@ -3,7 +3,7 @@ package victoriaslmn.bookcrossing.data.user
 import com.j256.ormlite.dao.Dao
 import rx.Observable
 
-class UserCache(userDao: Dao<UserDto, String>) {
+class UserCache(userDao: Dao<UserDto, Long>) {
     private val userDao = userDao;
 
     fun getCurrentUser(): Observable<UserDto?> {

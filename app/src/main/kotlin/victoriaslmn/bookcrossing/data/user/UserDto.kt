@@ -11,9 +11,9 @@ class UserDto {
         const val CURRENT = "current";
     }
 
-    @DatabaseField(columnName = "id", id = true)
-    @SerializedName("id")
-    var id: String? = null
+    @DatabaseField(columnName = "id", id = true, throwIfNull = true)
+    @SerializedName("uid")
+    var id: Long = 0
 
     @DatabaseField(columnName = "first_name")
     @SerializedName("first_name")

@@ -1,6 +1,5 @@
 package victoriaslmn.bookcrossing.view.auth
 
-import android.content.Intent
 import android.support.design.widget.NavigationView
 import android.view.View
 import android.widget.ImageView
@@ -8,7 +7,6 @@ import android.widget.TextView
 import com.squareup.picasso.Picasso
 import com.vk.sdk.VKAccessToken
 import com.vk.sdk.VKCallback
-import com.vk.sdk.VKSdk
 import com.vk.sdk.api.VKError
 import rx.Notification
 import rx.android.schedulers.AndroidSchedulers
@@ -33,15 +31,6 @@ class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
         }
 
         header = navView.getHeaderView(0)
-        header.setOnClickListener{
-            view -> auth()
-        }
-    }
-
-    fun auth() {
-        if (user != null) {
-            return
-        }
         userProvider
                 .getCurrentUser()
                 .materialize()
@@ -52,7 +41,10 @@ class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
                         Notification.Kind.OnError -> mainActivity.showError(R.string.auth_error)
                         Notification.Kind.OnNext ->
                             if (it.value.isEmpty()) {
-                                mainActivity.openVKAuthActivity()
+                                header.setOnClickListener {
+                                    view ->
+                                    auth()
+                                }
                             } else {
                                 resolveNavView(it.value)
                             }
@@ -60,6 +52,10 @@ class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
                         }
                     }
                 }
+    }
+
+    fun auth() {
+        mainActivity.openVKAuthActivity()
     }
 
     private fun resolveNavView(user: User) {
@@ -73,17 +69,10 @@ class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
         val menu = navView.getMenu()
         menu.clear()
         mainActivity.getMenuInflater().inflate(R.menu.activity_main_auth_drawer, menu)
+        header.setOnClickListener(null)
     }
 
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent): Boolean {
-        if (VKSdk.onActivityResult(requestCode, resultCode, data, AuthCallback())) {
-            return true
-        }
-        mainActivity.showError(R.string.auth_error);
-        return false
-    }
-
-    fun authCallback(): AuthCallback{
+    fun authCallback(): AuthCallback {
         return AuthCallback();
     }
 

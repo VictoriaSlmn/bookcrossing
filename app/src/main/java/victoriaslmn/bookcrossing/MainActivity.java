@@ -20,11 +20,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.squareup.okhttp.OkHttpClient;
 import com.vk.sdk.VKSdk;
 
 import java.sql.SQLException;
 
-import victoriaslmn.bookcrossing.data.common.HttpClient;
+import retrofit.GsonConverterFactory;
+import retrofit.Retrofit;
+import retrofit.RxJavaCallAdapterFactory;
+import com.squareup.okhttp.logging.HttpLoggingInterceptor;
 import victoriaslmn.bookcrossing.data.user.UserApi;
 import victoriaslmn.bookcrossing.data.user.UserCache;
 import victoriaslmn.bookcrossing.data.user.UserProvider;
@@ -58,11 +62,21 @@ public class MainActivity extends AppCompatActivity {
         toggle.syncState();
         databaseHelper = new DatabaseHelper(this);
         try {
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            OkHttpClient client = new OkHttpClient();
+            client.interceptors().add(interceptor);
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("https://api.vk.com/method/")
+                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .client(client)
+                    .build();
             navigationPresenter =
                     new NavigationPresenter(
                             this,
                             new UserProvider(
-                                    HttpClient.INSTANCE.getRetrofit().create(UserApi.class),
+                                    retrofit.create(UserApi.class),
                                     new UserCache(databaseHelper.getUserDao())));
         } catch (SQLException e) {
             throw new RuntimeException(e);
