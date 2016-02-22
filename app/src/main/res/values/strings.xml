@@ -8,6 +8,7 @@
     <string name="drawer_menu_item_recommendations">Рекомендации</string>
     <string name="drawer_menu_item_exit">Выход</string>
     <string name="search">Поиск</string>
+    <string name="logout_error">Упс.. не удалось выйти</string>
     <string name="navigation_drawer_open">Меню</string>
     <string name="navigation_drawer_close">Меню скрыто</string>
     <string name="auth_error">Ошибка авторизации</string>

@@ -1,6 +1,7 @@
 package victoriaslmn.bookcrossing.view.auth
 
 import android.support.design.widget.NavigationView
+import android.support.v4.view.GravityCompat
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -9,6 +10,7 @@ import com.vk.sdk.VKAccessToken
 import com.vk.sdk.VKCallback
 import com.vk.sdk.api.VKError
 import rx.Notification
+import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import victoriaslmn.bookcrossing.MainActivity
@@ -22,54 +24,77 @@ class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
     val mainActivity = activity;
     val navView: NavigationView;
     val header: View;
-    var user: User? = null;
 
     init {
         navView = activity.findViewById(R.id.nav_view) as NavigationView
+        header = navView.getHeaderView(0)
         navView.setNavigationItemSelectedListener {
-            false ///todo
+            when (it.getItemId()) {
+                R.id.nav_exit -> logout()
+                R.id.nav_folders -> {
+                }
+                R.id.nav_friends -> {
+                }
+                R.id.nav_main -> {
+                }
+                R.id.nav_recommendations -> {
+                }
+            }
+            mainActivity.closeDrawer(GravityCompat.START)
+            true
         }
 
-        header = navView.getHeaderView(0)
+        initNavView();
+    }
+
+    private fun initNavView(){
         userProvider
                 .getCurrentUser()
-                .materialize()
-                .subscribeOn(Schedulers.newThread())///todo
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
+                .execute {
                     when (it.kind) {
                         Notification.Kind.OnError -> mainActivity.showError(R.string.auth_error)
-                        Notification.Kind.OnNext ->
-                            if (it.value.isEmpty()) {
-                                header.setOnClickListener {
-                                    view ->
-                                    auth()
-                                }
-                            } else {
-                                resolveNavView(it.value)
-                            }
+                        Notification.Kind.OnNext -> resolveNavView(it.value)
                         else -> {
                         }
                     }
                 }
     }
 
-    fun auth() {
-        mainActivity.openVKAuthActivity()
+    private fun logout(){
+        userProvider.logOut()
+                .execute {
+                    when (it.kind) {
+                        Notification.Kind.OnError -> mainActivity.showError(R.string.logout_error)
+                        Notification.Kind.OnCompleted -> {
+                            resolveNavView(null)
+                        }
+                        else -> {
+                        }
+                    }
+                }
     }
 
-    private fun resolveNavView(user: User) {
-        this.user = user
+    private fun resolveNavView(user: User?) {
         val userPhoto = header.findViewById(R.id.imageView) as ImageView;
         val userName = header.findViewById(R.id.textView) as TextView;
-        Picasso.with(mainActivity)
-                .load(user.photo)
-                .transform(CircleTransform()).into(userPhoto)
-        userName.setText(user.name)
         val menu = navView.getMenu()
         menu.clear()
-        mainActivity.getMenuInflater().inflate(R.menu.activity_main_auth_drawer, menu)
-        header.setOnClickListener(null)
+        if(user == null){
+            Picasso.with(mainActivity)
+                    .load(R.drawable.ic_account_circle_white_48dp)
+                    .into(userPhoto)
+            userName.setText(R.string.enter)
+            mainActivity.getMenuInflater().inflate(R.menu.activity_main_drawer, menu)
+            header.setOnClickListener{ mainActivity.openVKAuthActivity()}
+        }else{
+            Picasso.with(mainActivity)
+                    .load(user.photo)
+                    .transform(CircleTransform())
+                    .into(userPhoto)
+            userName.setText(user.name)
+            mainActivity.getMenuInflater().inflate(R.menu.activity_main_auth_drawer, menu)
+            header.setOnClickListener(null)
+        }
     }
 
     fun authCallback(): AuthCallback {
@@ -79,10 +104,7 @@ class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
     inner class AuthCallback : VKCallback<VKAccessToken> {
         override fun onResult(res: VKAccessToken) {
             userProvider.login(res.accessToken, res.userId)
-                    .materialize()
-                    .subscribeOn(Schedulers.newThread())///todo
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe {
+                    .execute {
                         when (it.kind) {
                             Notification.Kind.OnError -> mainActivity.showError(R.string.auth_error)
                             Notification.Kind.OnNext -> resolveNavView(it.value)
@@ -96,4 +118,11 @@ class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
             mainActivity.showError(R.string.auth_error);
         }
     }
+}
+
+fun <T> Observable<T>.execute(function: (Notification<T>) -> Unit) {
+    this.materialize()
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(function)
 }

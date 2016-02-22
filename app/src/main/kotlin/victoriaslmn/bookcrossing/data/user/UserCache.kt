@@ -15,21 +15,32 @@ class UserCache(userDao: Dao<UserDto, Long>) {
     }
 
     fun saveCurrentUser(currentUser: UserDto, accessToken: String) {
-        getCurrent().forEach {
-            it.accessToken = "";
-            it.current = false;
-            userDao.update(it)
-        }
+        clearCurrent();
         currentUser.accessToken = accessToken;
         currentUser.current = true;
         userDao.createOrUpdate(currentUser)
     }
 
-    fun getCurrent(): MutableList<UserDto> {
+    private fun getCurrent(): MutableList<UserDto> {
         return userDao.query(userDao
                 .queryBuilder().where()
                 .eq(UserDto.Field.CURRENT, true)
                 .prepare());
+    }
+
+    private fun clearCurrent(){
+        getCurrent().forEach {
+            it.accessToken = "";
+            it.current = false;
+            userDao.update(it)
+        }
+    }
+
+    fun removeCurrentUser(): Observable<Void> {
+        return Observable.create {
+            clearCurrent();
+            it.onCompleted()
+        }
     }
 
 }

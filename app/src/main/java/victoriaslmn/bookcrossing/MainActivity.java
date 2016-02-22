@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     private NavigationPresenter navigationPresenter;
     private OrmLiteSqlite ormLiteSqlite;
+    private DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +56,11 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        DrawerLayout drawer_layout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer_layout.setDrawerListener(toggle);
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.setDrawerListener(toggle);
         toggle.syncState();
         ormLiteSqlite = new OrmLiteSqlite(this);
         try {
@@ -139,6 +141,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void openVKAuthActivity() {
         VKSdk.login(this, "docs", "friends");
+    }
+
+    public void closeDrawer(int gravity) {
+        drawerLayout.closeDrawer(gravity);
     }
 }
 
