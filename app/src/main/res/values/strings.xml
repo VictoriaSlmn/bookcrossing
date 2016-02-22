@@ -10,5 +10,6 @@
     <string name="search">Поиск</string>
     <string name="navigation_drawer_open">Меню</string>
     <string name="navigation_drawer_close">Меню скрыто</string>
+    <string name="auth_error">Ошибка авторизации</string>
     <integer name="com_vk_sdk_AppId">5278883</integer>
 </resources>

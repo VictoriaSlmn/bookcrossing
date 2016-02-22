@@ -1,4 +1,4 @@
-package victoriaslmn.bookcrossing;
+package victoriaslmn.bookcrossing.view;
 
 import android.graphics.*
 import com.squareup.picasso.Transformation
@@ -25,17 +25,9 @@ class CircleTransform : Transformation {
         paint.setAntiAlias(true);
 
         val r = size / 2f;
-        val borderWidth = 1f;
-        canvas.drawCircle(r, r, r - borderWidth, paint);
+        canvas.drawCircle(r, r, r, paint);
 
         squaredBitmap.recycle();
-
-        val border = Paint();
-        border.setColor(Color.WHITE);
-        border.setStyle(Paint.Style.STROKE);
-        border.setAntiAlias(true);
-        border.strokeWidth = borderWidth;
-        canvas.drawCircle(r, r, r - borderWidth, border);
 
         return bitmap;
     }

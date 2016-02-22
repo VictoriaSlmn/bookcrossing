@@ -1,4 +1,4 @@
-package victoriaslmn.bookcrossing
+package victoriaslmn.bookcrossing.view
 
 import android.support.v4.app.Fragment
 import java.util.concurrent.atomic.AtomicInteger
