@@ -38,7 +38,7 @@ import victoriaslmn.bookcrossing.view.auth.NavigationPresenter;
 public class MainActivity extends AppCompatActivity {
 
     private NavigationPresenter navigationPresenter;
-    private DatabaseHelper databaseHelper;
+    private OrmLiteSqlite ormLiteSqlite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer_layout.setDrawerListener(toggle);
         toggle.syncState();
-        databaseHelper = new DatabaseHelper(this);
+        ormLiteSqlite = new OrmLiteSqlite(this);
         try {
             HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
             interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
                             this,
                             new UserProvider(
                                     retrofit.create(UserApi.class),
-                                    new UserCache(databaseHelper.getUserDao())));
+                                    new UserCache(ormLiteSqlite.getUserDao())));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        databaseHelper.close();
+        ormLiteSqlite.close();
         super.onDestroy();
     }
 

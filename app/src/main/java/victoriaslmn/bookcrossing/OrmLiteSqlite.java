@@ -14,7 +14,7 @@ import victoriaslmn.bookcrossing.data.document.DocumentDto;
 import victoriaslmn.bookcrossing.data.user.UserDto;
 
 
-public class DatabaseHelper1 extends OrmLiteSqliteOpenHelper {
+public class OrmLiteSqlite extends OrmLiteSqliteOpenHelper {
 
     private static final String DATABASE_NAME = "bookcrossing.db";
     private static final int DATABASE_VERSION = 1;
@@ -22,7 +22,7 @@ public class DatabaseHelper1 extends OrmLiteSqliteOpenHelper {
     private Dao<UserDto, Long> userDao = null;
     private Dao<DocumentDto, Long> documentDao = null;
 
-    public DatabaseHelper1(Context context) {
+    public OrmLiteSqlite(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
