@@ -11,7 +11,9 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.support.v7.widget.Toolbar
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -25,13 +27,15 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import victoriaslmn.bookcrossing.MainActivity
 import victoriaslmn.bookcrossing.R
+import victoriaslmn.bookcrossing.data.document.BookProvider
 import victoriaslmn.bookcrossing.data.user.UserProvider
+import victoriaslmn.bookcrossing.domain.Book
+import victoriaslmn.bookcrossing.domain.BookFilter
 import victoriaslmn.bookcrossing.domain.User
 import victoriaslmn.bookcrossing.view.CircleTransform
+import kotlinx.android.synthetic.main.book_item.view.*
 
-class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
-    val userProvider = userProvider;
-    val mainActivity = activity;
+class NavigationPresenter(val activity: MainActivity, val userProvider: UserProvider, val bookProvider: BookProvider) {
     val navView: NavigationView;
     val header: View;
     val recyclerView: RecyclerView;
@@ -109,19 +113,19 @@ class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
         val menu = navView.getMenu()
         menu.clear()
         if (user == null) {
-            Picasso.with(mainActivity)
+            Picasso.with(activity)
                     .load(R.drawable.ic_account_circle_white_48dp)
                     .into(userPhoto)
             userName.setText(R.string.enter)
-            mainActivity.getMenuInflater().inflate(R.menu.activity_main_drawer, menu)
-            header.setOnClickListener { mainActivity.openVKAuthActivity() }
+            activity.getMenuInflater().inflate(R.menu.activity_main_drawer, menu)
+            header.setOnClickListener { activity.openVKAuthActivity() }
         } else {
-            Picasso.with(mainActivity)
+            Picasso.with(activity)
                     .load(user.photo)
                     .transform(CircleTransform())
                     .into(userPhoto)
             userName.setText(user.name)
-            mainActivity.getMenuInflater().inflate(R.menu.activity_main_auth_drawer, menu)
+            activity.getMenuInflater().inflate(R.menu.activity_main_auth_drawer, menu)
             header.setOnClickListener(null)
         }
     }
@@ -144,22 +148,68 @@ class NavigationPresenter(activity: MainActivity, userProvider: UserProvider) {
         }
     }
 
-    inner class SearchOnQueryTextListener(): SearchView.OnQueryTextListener {
+    inner class SearchOnQueryTextListener() : SearchView.OnQueryTextListener {
         override fun onQueryTextChange(query: String?): Boolean {
-            Toast.makeText(mainActivity, "query: ${query}" , Toast.LENGTH_SHORT).show()
+            searchDocuments(query);
             return true
         }
 
         override fun onQueryTextSubmit(submit: String?): Boolean {
-            Toast.makeText(mainActivity, "submit: ${submit}" , Toast.LENGTH_SHORT).show()
-           return true
+            return true
         }
     }
 
+    private fun searchDocuments(query: String?) {
+        userProvider.getAccessToken().
+                concatMap {
+                    bookProvider.getBooks(BookFilter(query, 0, it!!))///todo
+                }
+                .execute {
+                    when (it.kind) {
+                        Notification.Kind.OnError -> showError(R.string.download_error)
+                        Notification.Kind.OnNext -> resolveBookList(it.value)
+                        else -> {
+                        }
+                    }
+                }
+    }
+
+    private fun resolveBookList(value: List<Book>) {
+        recyclerView.adapter = BookAdapter(value);
+    }
+
     fun showError(@StringRes message: Int) {
-        Toast.makeText(mainActivity, message, Toast.LENGTH_LONG).show()
+        Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
     }
 }
+
+class AuthError : RuntimeException() {
+
+}
+
+class BookAdapter(val books: List<Book>) : RecyclerView.Adapter<BookViewHolder>() {
+    override fun onBindViewHolder(viewHolder: BookViewHolder, position: Int) {
+        viewHolder.bind(books.get(position))
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, itemType: Int): BookViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.book_item, parent, false)
+        return BookViewHolder(view)
+    }
+
+    override fun getItemCount(): Int {
+        return books.count()
+    }
+
+}
+
+class BookViewHolder(view: View): RecyclerView.ViewHolder(view) {
+    fun bind(book: Book) {
+        itemView.bookType.text = "${book.format} ${book.title}";
+    }
+
+}
+
 
 fun <T> Observable<T>.execute(function: (Notification<T>) -> Unit) {
     this.materialize()

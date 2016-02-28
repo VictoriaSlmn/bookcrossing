@@ -17,6 +17,9 @@ import java.sql.SQLException;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 import retrofit.RxJavaCallAdapterFactory;
+import victoriaslmn.bookcrossing.data.document.BookProvider;
+import victoriaslmn.bookcrossing.data.document.DocumentsApi;
+import victoriaslmn.bookcrossing.data.document.DocumentsCache;
 import victoriaslmn.bookcrossing.data.user.UserApi;
 import victoriaslmn.bookcrossing.data.user.UserCache;
 import victoriaslmn.bookcrossing.data.user.UserProvider;
@@ -50,7 +53,9 @@ public class MainActivity extends AppCompatActivity {
                             this,
                             new UserProvider(
                                     retrofit.create(UserApi.class),
-                                    new UserCache(ormLiteSqlite.getUserDao())));
+                                    new UserCache(ormLiteSqlite.getUserDao())),
+                            new BookProvider(retrofit.create(DocumentsApi.class),
+                                    new DocumentsCache(ormLiteSqlite.getDocumentDao())));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

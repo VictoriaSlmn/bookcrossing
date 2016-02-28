@@ -6,13 +6,14 @@ import rx.Observable
 import victoriaslmn.bookcrossing.data.common.PagingResponse
 import victoriaslmn.bookcrossing.data.common.VkResponse
 
-//https://api.vk.com/method/'''METHOD_NAME'''?'''PARAMETERS'''&access_token='''ACCESS_TOKEN'''
-internal interface DocumentsApi {
+interface DocumentsApi {
 
     @GET("docs.search")
     fun searchDocuments(@Query("q") mask: String,
                         @Query("count") count: Int,
-                        @Query("offset") offset: Int): Observable<VkResponse<PagingResponse<DocumentDto>>>
+                        @Query("offset") offset: Int,
+                        @Query("access_token") accessToken: String,
+                        @Query("v") version:String = "5.45" ): Observable<VkResponse<PagingResponse<DocumentDto>>>
 
     @GET("docs.get")
     fun getDocumentsByUser(@Query("owner_id") ownerId: Long,

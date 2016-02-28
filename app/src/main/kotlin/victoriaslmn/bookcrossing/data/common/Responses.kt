@@ -20,7 +20,7 @@ class PagingResponse<T>() {
     @SerializedName("count")
     var count: Int = 0
 
-    @SerializedName("count")
+    @SerializedName("items")
     var items: List<T> = ArrayList()
 }
 

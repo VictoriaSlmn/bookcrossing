@@ -17,9 +17,9 @@ class DocumentDto {
         const val NONAME = 8
     }
 
-    @DatabaseField(columnName = "id", id = true)
+    @DatabaseField(columnName = "id", id = true, throwIfNull = true)
     @SerializedName("id")
-    var id: Long? = null
+    var id: Long = 0
 
     @DatabaseField(columnName = "owner_id")
     @SerializedName("owner_id")
@@ -52,9 +52,6 @@ class DocumentDto {
     @DatabaseField(columnName = "access_key")
     @SerializedName("access_key")
     var accessKey: String? = null
-
-    @DatabaseField(columnName = "load")
-    var load: Boolean = false
 
     @DatabaseField(columnName = "folder")
     var folder: String? = null
