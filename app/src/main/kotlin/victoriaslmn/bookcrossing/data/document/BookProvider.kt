@@ -37,7 +37,7 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
                         getFormat(it.ext),
                         it.dir,
                         it.url)
-            }
+            }.filter { !it.format.equals(Book.Format.NONAME) }
         }
     }
 

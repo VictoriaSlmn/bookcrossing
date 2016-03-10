@@ -13,5 +13,6 @@
     <string name="navigation_drawer_close">Меню скрыто</string>
     <string name="auth_error">Ошибка авторизации</string>
     <string name="download_error">Ошибка загрузки данных</string>
+    <string name="download_string">download</string>
     <integer name="com_vk_sdk_AppId">5278883</integer>
 </resources>

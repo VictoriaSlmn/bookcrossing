@@ -203,11 +203,11 @@ class BookAdapter(val books: List<Book>) : RecyclerView.Adapter<BookViewHolder>(
 
 }
 
-class BookViewHolder(view: View): RecyclerView.ViewHolder(view) {
+class BookViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     fun bind(book: Book) {
-        itemView.bookType.text = "${book.format} ${book.title}";
+        itemView.bookType.text = "${book.format}"
+        itemView.bookDescription.text = "${book.title}";
     }
-
 }
 
 

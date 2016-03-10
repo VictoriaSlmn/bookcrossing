@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="pink">#FF0080</color>
+    <color name="black_87">#de000000</color>
+    <color name="black_3">#08000000</color>
 </resources>
