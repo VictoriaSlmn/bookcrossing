@@ -8,7 +8,7 @@
             android:title="@string/drawer_menu_item_main" />
         <item
             android:id="@+id/nav_friends"
-            android:icon="@drawable/ic_people_black_24dp"
+            android:icon="@drawable/ic_group_black_24dp"
             android:title="@string/drawer_menu_item_friends" />
         <item
             android:id="@+id/nav_folders"
@@ -16,17 +16,12 @@
             android:title="@string/drawer_menu_item_folders" />
         <item
             android:id="@+id/nav_recommendations"
-            android:icon="@drawable/ic_rss_feed_black_24dp"
+            android:icon="@drawable/ic_cast_black_24dp"
             android:title="@string/drawer_menu_item_recommendations" />
+        <item
+            android:id="@+id/nav_exit"
+            android:icon="@drawable/ic_input_black_24dp"
+            android:title="@string/drawer_menu_item_exit" />
     </group>
-
-    <item android:title="">
-        <menu>
-            <item
-                android:id="@+id/nav_exit"
-                android:icon="@drawable/ic_exit_to_app_black_24dp"
-                android:title="@string/drawer_menu_item_exit" />
-        </menu>
-    </item>
 
 </menu>

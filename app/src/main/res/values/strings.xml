@@ -2,9 +2,9 @@
     <string name="app_name">Bookcrossing</string>
 
     <string name="enter">Войти</string>
-    <string name="drawer_menu_item_main">Мои</string>
-    <string name="drawer_menu_item_friends">Друзей</string>
-    <string name="drawer_menu_item_folders">Папки</string>
+    <string name="drawer_menu_item_main">Мои книги</string>
+    <string name="drawer_menu_item_friends">Книги друзей</string>
+    <string name="drawer_menu_item_folders">Книги по разделам</string>
     <string name="drawer_menu_item_recommendations">Рекомендации</string>
     <string name="drawer_menu_item_exit">Выход</string>
     <string name="search">Поиск</string>

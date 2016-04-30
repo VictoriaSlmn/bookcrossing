@@ -23,7 +23,7 @@ class DocumentDto {
 
     @DatabaseField(columnName = "owner_id")
     @SerializedName("owner_id")
-    var owerId: Long? = null
+    var owerId: Long = 0
 
     @DatabaseField(columnName = "title")
     @SerializedName("title")

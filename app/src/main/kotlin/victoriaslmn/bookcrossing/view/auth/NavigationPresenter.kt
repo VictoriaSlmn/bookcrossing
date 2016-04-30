@@ -1,5 +1,7 @@
 package victoriaslmn.bookcrossing.view.auth
 
+import android.content.res.ColorStateList
+import android.os.Environment
 import android.support.annotation.StringRes
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.NavigationView
@@ -34,6 +36,8 @@ import victoriaslmn.bookcrossing.domain.BookFilter
 import victoriaslmn.bookcrossing.domain.User
 import victoriaslmn.bookcrossing.view.CircleTransform
 import kotlinx.android.synthetic.main.book_item.view.*
+import java.io.*
+import java.net.URL
 
 class NavigationPresenter(val activity: MainActivity, val userProvider: UserProvider, val bookProvider: BookProvider) {
     val navView: NavigationView;
@@ -113,13 +117,13 @@ class NavigationPresenter(val activity: MainActivity, val userProvider: UserProv
         val menu = navView.getMenu()
         menu.clear()
         if (user == null) {
-            Picasso.with(activity)
-                    .load(R.drawable.ic_account_circle_white_48dp)
-                    .into(userPhoto)
+            userPhoto.imageTintList = ColorStateList.valueOf(userPhoto.context.getColor(R.color.vk_white))
+            userPhoto.setImageResource(R.drawable.ic_account_circle_black_24dp)
             userName.setText(R.string.enter)
             activity.getMenuInflater().inflate(R.menu.activity_main_drawer, menu)
             header.setOnClickListener { activity.openVKAuthActivity() }
         } else {
+            userPhoto.imageTintList = null
             Picasso.with(activity)
                     .load(user.photo)
                     .transform(CircleTransform())
@@ -181,35 +185,37 @@ class NavigationPresenter(val activity: MainActivity, val userProvider: UserProv
     fun showError(@StringRes message: Int) {
         Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
     }
-}
 
-class AuthError : RuntimeException() {
+    inner class BookAdapter(val books: List<Book>) : RecyclerView.Adapter<BookAdapter.BookViewHolder>() {
+        override fun onBindViewHolder(viewHolder: BookViewHolder, position: Int) {
+            viewHolder.bind(books.get(position))
+        }
 
-}
+        override fun onCreateViewHolder(parent: ViewGroup, itemType: Int): BookViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.book_item, parent, false)
+            return BookViewHolder(view)
+        }
 
-class BookAdapter(val books: List<Book>) : RecyclerView.Adapter<BookViewHolder>() {
-    override fun onBindViewHolder(viewHolder: BookViewHolder, position: Int) {
-        viewHolder.bind(books.get(position))
+        override fun getItemCount(): Int {
+            return books.count()
+        }
+
+        inner class BookViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            fun bind(book: Book) {
+                itemView.bookType.text = "${book.format}"
+                itemView.bookDescription.text = "${book.title}";
+                if (book.localURI != null) {
+                    itemView.bookDownload.visibility = View.GONE;
+                } else {
+                    itemView.bookDownload.visibility = View.VISIBLE;
+                    itemView.bookDownload.setOnClickListener({
+                        bookProvider.downloadBook(book)
+                    })
+                }
+            }
+        }
     }
-
-    override fun onCreateViewHolder(parent: ViewGroup, itemType: Int): BookViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.book_item, parent, false)
-        return BookViewHolder(view)
-    }
-
-    override fun getItemCount(): Int {
-        return books.count()
-    }
-
 }
-
-class BookViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    fun bind(book: Book) {
-        itemView.bookType.text = "${book.format}"
-        itemView.bookDescription.text = "${book.title}";
-    }
-}
-
 
 fun <T> Observable<T>.execute(function: (Notification<T>) -> Unit) {
     this.materialize()

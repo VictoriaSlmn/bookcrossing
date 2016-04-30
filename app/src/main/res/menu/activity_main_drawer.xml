@@ -12,7 +12,7 @@
             android:title="@string/drawer_menu_item_folders" />
         <item
             android:id="@+id/nav_recommendations"
-            android:icon="@drawable/ic_rss_feed_black_24dp"
+            android:icon="@drawable/ic_cast_black_24dp"
             android:title="@string/drawer_menu_item_recommendations" />
     </group>
 </menu>

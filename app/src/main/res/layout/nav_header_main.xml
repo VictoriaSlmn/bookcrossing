@@ -13,9 +13,10 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_account_circle_white_48dp" />
+        android:layout_width="@dimen/account_photo_size"
+        android:layout_height="@dimen/account_photo_size"
+        android:tint="@color/vk_white"
+        android:src="@drawable/ic_account_circle_black_24dp" />
 
     <TextView
         android:id="@+id/textView"
