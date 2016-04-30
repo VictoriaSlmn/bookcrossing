@@ -23,11 +23,11 @@ import victoriaslmn.bookcrossing.data.document.DocumentsCache;
 import victoriaslmn.bookcrossing.data.user.UserApi;
 import victoriaslmn.bookcrossing.data.user.UserCache;
 import victoriaslmn.bookcrossing.data.user.UserProvider;
-import victoriaslmn.bookcrossing.view.auth.NavigationPresenter;
+import victoriaslmn.bookcrossing.view.Router;
 
 public class MainActivity extends AppCompatActivity {
 
-    private NavigationPresenter navigationPresenter;
+    private Router router;
     private OrmLiteSqlite ormLiteSqlite;
 
     @Override
@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ///todo
+        ///todo refactor
         ormLiteSqlite = new OrmLiteSqlite(this);
         try {
             HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
@@ -48,8 +48,8 @@ public class MainActivity extends AppCompatActivity {
                     .addConverterFactory(GsonConverterFactory.create())
                     .client(client)
                     .build();
-            navigationPresenter =
-                    new NavigationPresenter(
+            router =
+                    new Router(
                             this,
                             new UserProvider(
                                     retrofit.create(UserApi.class),
@@ -65,16 +65,16 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
-        searchView.setOnQueryTextListener(navigationPresenter.getOnQueryTextListener());
+        searchView.setOnQueryTextListener(router.getOnQueryTextListener());
         return true;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (VKSdk.onActivityResult(requestCode, resultCode, data, navigationPresenter.getAuthCallback())) {
+        if (VKSdk.onActivityResult(requestCode, resultCode, data, router.getAuthCallback())) {
             return;
         }
-        navigationPresenter.showError(R.string.auth_error);
+        router.showAuthError();
     }
 
     @Override
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void openVKAuthActivity() {
         VKSdk.login(this, "docs", "friends");
-    }
+    }//// TODO: 30.04.16 refactor
 }
 
 

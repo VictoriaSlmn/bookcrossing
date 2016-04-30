@@ -1,4 +1,4 @@
-package victoriaslmn.bookcrossing.view;
+package victoriaslmn.bookcrossing.view.common;
 
 import android.graphics.*
 import com.squareup.picasso.Transformation
