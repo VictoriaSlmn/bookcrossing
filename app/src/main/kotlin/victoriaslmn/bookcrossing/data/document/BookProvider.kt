@@ -32,30 +32,47 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
     }
 
     fun downloadBook(book: Book): Observable<Book> {
-        return Observable.create {
+        documentsApi.addDocument(book.ownerId, book.id, null /*todo asseskey*/)
+        //   .map { Book() } todo
+        //   return Observable.zip()
+
+        return Observable.empty<Book>()
+    }
+
+    private fun saveInInternalStorage(book: Book): Observable<String> {
+        if (book.remoteURI == null) {
+            return Observable.empty()
+        }
+        return Observable.create(Observable.OnSubscribe<String> {
             val localURI = Environment.getExternalStorageDirectory().toString() + "/bookcrossing/" + book.title;
             try {
-                val u = URL(book.remoteURI);
-                val conn = u.openConnection();
-                val contentLength = conn.getContentLength();
-
-                val stream = DataInputStream(u.openStream())
-
-                val buffer = ByteArray(contentLength)
-                stream.readFully(buffer)
-                stream.close()
-
-                val fos = DataOutputStream(FileOutputStream(File(localURI)))
-                fos.write(buffer)
-                fos.flush()
-                fos.close()
+                saveInInternalStorage(localURI, book.remoteURI)
+                it.onNext(localURI)
             } catch (e: Exception) {
                 it.onError(e)
             } finally {
                 it.onCompleted()
             }
-        };
+        });
     }
+
+    private fun saveInInternalStorage(localURI: String, remoteURI: String) {
+        val u = URL(remoteURI);
+        val conn = u.openConnection();
+        val contentLength = conn.getContentLength();
+
+        val stream = DataInputStream(u.openStream())
+
+        val buffer = ByteArray(contentLength)
+        stream.readFully(buffer)
+        stream.close()
+
+        val fos = DataOutputStream(FileOutputStream(File(localURI)))
+        fos.write(buffer)
+        fos.flush()
+        fos.close()
+    }
+
 
     private fun Observable<List<DocumentDto>>.mapToBook(): Observable<List<Book>> {
         return this.map {

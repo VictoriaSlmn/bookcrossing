@@ -1,6 +1,5 @@
 package victoriaslmn.bookcrossing.view
 
-import android.support.annotation.StringRes
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.NavigationView
 import android.support.v7.widget.LinearLayoutManager
@@ -11,8 +10,6 @@ import victoriaslmn.bookcrossing.MainActivity
 import victoriaslmn.bookcrossing.R
 import victoriaslmn.bookcrossing.data.document.BookProvider
 import victoriaslmn.bookcrossing.data.user.UserProvider
-import victoriaslmn.bookcrossing.view.MyBooksPresenter
-import victoriaslmn.bookcrossing.view.NavigationViewPresenter
 import victoriaslmn.bookcrossing.view.common.RecycleViewPresenter
 
 
