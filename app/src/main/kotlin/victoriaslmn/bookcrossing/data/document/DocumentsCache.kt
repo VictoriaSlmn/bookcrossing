@@ -4,15 +4,14 @@ import com.j256.ormlite.dao.Dao
 import rx.Observable
 import victoriaslmn.bookcrossing.data.user.UserDto
 import victoriaslmn.bookcrossing.domain.Book
-import victoriaslmn.bookcrossing.domain.BookFilter
 
 class DocumentsCache(val documentsDao: Dao<DocumentDto, Long>) {
-    fun getDownloadedDocuments(bookFilter: BookFilter): Observable<List<DocumentDto>> {
-        //todo filter
+    fun getMyDocuments(): Observable<List<DocumentDto>> {
         return Observable.just(documentsDao.queryForAll());
     }
 
-    fun setDocumentDownload(dto: DocumentDto): Boolean {
-        return documentsDao.update(dto) == 1
+    fun updateDocument(dto: DocumentDto): Boolean {
+        val status = documentsDao.createOrUpdate(dto)
+        return status.isCreated || status.isUpdated
     }
 }

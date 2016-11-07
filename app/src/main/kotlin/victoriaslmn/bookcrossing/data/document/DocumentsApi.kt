@@ -18,7 +18,9 @@ interface DocumentsApi {
     @GET("docs.get")
     fun getDocumentsByUser(@Query("owner_id") ownerId: Long,
                            @Query("count") count: Int,
-                           @Query("offset") offset: Int): Observable<VkResponse<PagingResponse<DocumentDto>>>
+                           @Query("offset") offset: Int,
+                           @Query("access_token") accessToken: String,
+                           @Query("v") version:String = "5.45"): Observable<VkResponse<PagingResponse<DocumentDto>>>
 
     @GET("docs.getUploadServer")
     fun getUploadServer(): Observable<VkResponse<UploadServerDto>>

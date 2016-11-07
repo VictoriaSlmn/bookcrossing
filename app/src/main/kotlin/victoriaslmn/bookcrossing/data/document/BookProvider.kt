@@ -5,7 +5,7 @@ import rx.Observable
 import victoriaslmn.bookcrossing.data.common.PagingResponse
 import victoriaslmn.bookcrossing.data.common.VkResponse
 import victoriaslmn.bookcrossing.domain.Book
-import victoriaslmn.bookcrossing.domain.BookFilter
+import victoriaslmn.bookcrossing.domain.User
 import java.io.*
 import java.net.URL
 
@@ -13,22 +13,34 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
 
     val PAGE_SIZE = 20;
 
-    fun getBooks(bookFilter: BookFilter): Observable<List<Book>> {
-        val downloadedDocuments = documentsCache.getDownloadedDocuments(bookFilter).cache();
-        if (bookFilter.mask == null || bookFilter.mask.length < 3) {
-            return downloadedDocuments.mapToBook()
+    fun searchBooks(mask: String, page: Int, accessToken: String?): Observable<List<Book>> { //todo Page Object
+        if (accessToken == null) {
+            return documentsCache.getMyDocuments()
+                    .flatMapIterable { it }
+                    .filter { it.title?.contains(mask, true) } //todo delete duplicates
+                    .toList()
+                    .mapToBook()
         }
-        return Observable.zip(downloadedDocuments,
-                documentsApi
-                        .searchDocuments(bookFilter.mask, PAGE_SIZE, PAGE_SIZE * bookFilter.page, bookFilter.accessToken),
-                { downloaded: List<DocumentDto>, finded: VkResponse<PagingResponse<DocumentDto>> ->
-                    val fromVkDocuments = finded.response?.items;
-                    if (fromVkDocuments == null) {
-                        downloaded
-                    } else {
-                        downloaded.plus(fromVkDocuments)
-                    }
-                }).mapToBook()
+        return documentsApi
+                .searchDocuments(mask, PAGE_SIZE, PAGE_SIZE * page, accessToken)
+                .map { it.response?.items ?: emptyList<DocumentDto>() }
+                .onExceptionResumeNext(documentsCache.getMyDocuments()
+                        .flatMapIterable { it }
+                        .filter { it.title?.contains(mask, true) }
+                        .toList())
+                .mapToBook()
+    }
+
+    fun getBooksByUser(user: User?, page: Int, accessToken: String?): Observable<List<Book>> {//todo Page Object
+        if (user == null || accessToken == null) {
+            return documentsCache.getMyDocuments().mapToBook()
+        }
+        return documentsApi.getDocumentsByUser(user.id, PAGE_SIZE, PAGE_SIZE * page, accessToken)
+                .flatMapIterable { it.response?.items!! }
+                .doOnNext { documentsCache.updateDocument(it) }
+                .toList()
+                .onExceptionResumeNext(documentsCache.getMyDocuments())
+                .mapToBook()
     }
 
     fun downloadBook(book: Book): Observable<Book> {

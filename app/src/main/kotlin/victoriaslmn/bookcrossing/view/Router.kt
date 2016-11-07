@@ -58,8 +58,10 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
 
     inner class SearchOnQueryTextListener() : SearchView.OnQueryTextListener {
         override fun onQueryTextChange(query: String?): Boolean {
-            if (query != null) {
-                currentRecycleViewPresenter.search(query);
+            if (query == null || query.length == 0) {
+                currentRecycleViewPresenter.init()
+            } else {
+                currentRecycleViewPresenter.search(query)
             }
             return true
         }
