@@ -37,8 +37,8 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
 
 
     inner class Navigation : NavigationView.OnNavigationItemSelectedListener {
-        override fun onNavigationItemSelected(item: MenuItem?): Boolean {
-            when (item?.getItemId()) {
+        override fun onNavigationItemSelected(item: MenuItem): Boolean {
+            when (item.getItemId()) {
                 R.id.nav_exit -> navigationViewPresenter.logout()
                 R.id.nav_folders -> {
                 }
