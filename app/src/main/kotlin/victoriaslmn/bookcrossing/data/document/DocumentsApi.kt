@@ -15,6 +15,11 @@ interface DocumentsApi {
                         @Query("access_token") accessToken: String,
                         @Query("v") version:String = "5.45" ): Observable<VkResponse<PagingResponse<DocumentDto>>>
 
+    @GET("docs.getById")
+    fun getDocumentsById(@Query("docs") ids: Set<Long>,
+                         @Query("access_token") accessToken: String,
+                         @Query("v") version:String = "5.45"): Observable<VkResponse<PagingResponse<DocumentDto>>>
+
     @GET("docs.get")
     fun getDocumentsByUser(@Query("owner_id") ownerId: Long,
                            @Query("count") count: Int,
@@ -48,5 +53,6 @@ interface DocumentsApi {
     @GET("docs.add")
     fun addDocument(@Query("owner_id") ownerId: Long,
                     @Query("doc_id") docId: Long,
-                    @Query("access_key") accessKey: String?): Observable<VkResponse<Long>>
+                    @Query("access_key") accessKey: String,
+                    @Query("v") version:String = "5.45"): Observable<VkResponse<Long>>
 }

@@ -16,21 +16,13 @@ class MyBooksPresenter(val recyclerView: RecyclerView, val bookProvider: BookPro
     }
 
     override fun init() {
-        Observable.zip(userProvider.getCurrentUser(), userProvider.getAccessToken(),
-                { user, assesToken -> Pair(user, assesToken) })//todo paging
-                .flatMap { bookProvider.getBooksByUser(it.first, 0, it.second) }
-                .execute {//todo common
-                    when (it.kind) {
-                        Notification.Kind.OnError -> {
-                            it.throwable.printStackTrace()
-                            showError(R.string.download_error, recyclerView.context)
-                        }
-                        Notification.Kind.OnNext -> resolveBookList(it.value)
-                        else -> {
-                        }
-                    }
-                }
+        getUserAndAccesskey()
+                .flatMap { bookProvider.getBooksByUser(it.first, 0, it.second) } //todo paging
+                .execute { dataLoadedAction(it, { value -> resolveBookList(value) }) }
     }
+
+    private fun getUserAndAccesskey() = Observable.zip(userProvider.getCurrentUser(), userProvider.getAccessToken(),
+            { user, assesToken -> Pair(user, assesToken) })
 
     override fun addAction() {
         //todo 3. download new book from file and find in internet?
@@ -43,23 +35,40 @@ class MyBooksPresenter(val recyclerView: RecyclerView, val bookProvider: BookPro
         }
 
         userProvider.getAccessToken().
-                concatMap {
-                    bookProvider.searchBooks(query, 0, it) //todo paging
-                }
-                .execute {//todo common
-                    when (it.kind) {
-                        Notification.Kind.OnError ->  {
-                            it.throwable.printStackTrace()
-                            showError(R.string.download_error, recyclerView.context)
-                        }
-                        Notification.Kind.OnNext -> resolveBookList(it.value)
-                        else -> {
-                        }
-                    }
-                }
+                concatMap { bookProvider.searchBooks(query, 0, it) } //todo paging
+                .execute { dataLoadedAction(it, { value -> resolveBookList(value) }) }
+    }
+
+    fun <T> dataLoadedAction(it: Notification<T>, action: (T) -> Unit) {
+        when (it.kind) {
+            Notification.Kind.OnError -> {
+                it.throwable.printStackTrace()
+                showError(R.string.download_error, recyclerView.context)
+            }
+            Notification.Kind.OnNext -> action(it.value)
+            else -> {
+            }
+        }
     }
 
     fun resolveBookList(value: List<Book>) {
-        recyclerView.adapter = BookAdapter(value, { bookProvider.downloadBook(it) }) //todo 2. save finding books as my
+        recyclerView.adapter = BookAdapter(value, downloadDocumentAction()) //todo 2. save finding books as my
+    }
+
+    private fun downloadDocumentAction(): (Book) -> Unit = {
+
+        //todo start loading
+
+        getUserAndAccesskey()
+                .flatMap { userAndAccesskey ->
+                    bookProvider.downloadBook(it,
+                            userAndAccesskey.first!!, //todo auth exception
+                            userAndAccesskey.second!!)
+                }.execute {
+            dataLoadedAction(it, {
+                value ->
+                (recyclerView.adapter as BookAdapter).updateBookDownloadedFlag(value)
+            })
+        }
     }
 }

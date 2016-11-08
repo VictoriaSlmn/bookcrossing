@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                                     retrofit.create(UserApi.class),
                                     new UserCache(ormLiteSqlite.getUserDao())),
                             new BookProvider(retrofit.create(DocumentsApi.class),
-                                    new DocumentsCache(ormLiteSqlite.getDocumentDao())));
+                                    new DocumentsCache(ormLiteSqlite.getDocumentDao(), getBaseContext())));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

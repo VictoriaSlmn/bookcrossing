@@ -25,16 +25,22 @@ class BookAdapter(val books: List<Book>, val downloadBook: (book: Book) -> Unit)
     inner class BookViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun bind(book: Book) {
             itemView.bookType.text = "${book.format}"
-            itemView.bookDescription.text = "${book.title}";
-            if (book.localURI != null) {
-                itemView.bookDownload.visibility = View.GONE;
+            itemView.bookDescription.text = book.title
+            if (book.downloaded) {
+                itemView.bookDownload.visibility = View.GONE
             } else {
-                itemView.bookDownload.visibility = View.VISIBLE;
+                itemView.bookDownload.visibility = View.VISIBLE
                 itemView.bookDownload.setOnClickListener({
                     downloadBook(book)
                 })
             }
         }
+    }
+
+    fun updateBookDownloadedFlag(value: Book) {
+        val position = books.indexOfFirst { it.id == value.id }
+        books.get(position).downloaded = value.downloaded
+        notifyItemChanged(position)
     }
 }
 

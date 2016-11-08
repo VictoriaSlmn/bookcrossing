@@ -75,10 +75,12 @@ class NavigationViewPresenter(val activity: MainActivity,
             header.setOnClickListener { activity.openVKAuthActivity() }
         } else {
             userPhoto.imageTintList = null
-            Picasso.with(activity)
-                    .load(user.photo)
-                    .transform(CircleTransform())
-                    .into(userPhoto)
+            if (!user.photo.isNullOrEmpty()) {
+                Picasso.with(activity)
+                        .load(user.photo)
+                        .transform(CircleTransform())
+                        .into(userPhoto)
+            }
             userName.setText(user.name)
             activity.getMenuInflater().inflate(R.menu.activity_main_auth_drawer, menu)
             header.setOnClickListener(null)

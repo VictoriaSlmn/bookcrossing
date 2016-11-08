@@ -1,13 +1,8 @@
 package victoriaslmn.bookcrossing.data.document
 
-import android.os.Environment
 import rx.Observable
-import victoriaslmn.bookcrossing.data.common.PagingResponse
-import victoriaslmn.bookcrossing.data.common.VkResponse
 import victoriaslmn.bookcrossing.domain.Book
 import victoriaslmn.bookcrossing.domain.User
-import java.io.*
-import java.net.URL
 
 class BookProvider(val documentsApi: DocumentsApi, val documentsCache: DocumentsCache) {
 
@@ -26,14 +21,14 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
                 .map { it.response?.items ?: emptyList<DocumentDto>() }
                 .onExceptionResumeNext(documentsCache.getMyDocuments()
                         .flatMapIterable { it }
-                        .filter { it.title?.contains(mask, true) }
+                        .filter { it.title?.contains(mask, true) }//todo delete duplicates
                         .toList())
                 .mapToBook()
     }
 
     fun getBooksByUser(user: User?, page: Int, accessToken: String?): Observable<List<Book>> {//todo Page Object
         if (user == null || accessToken == null) {
-            return documentsCache.getMyDocuments().mapToBook()
+            return documentsCache.getMyDocuments().mapToBook()//todo delete duplicates
         }
         return documentsApi.getDocumentsByUser(user.id, PAGE_SIZE, PAGE_SIZE * page, accessToken)
                 .flatMapIterable { it.response?.items!! }
@@ -43,78 +38,42 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
                 .mapToBook()
     }
 
-    fun downloadBook(book: Book): Observable<Book> {
-        documentsApi.addDocument(book.ownerId, book.id, null /*todo asseskey*/)
-        //   .map { Book() } todo
-        //   return Observable.zip()
+    fun downloadBook(book: Book, user: User, accessToken: String): Observable<Book> {
+        val document: Observable<DocumentDto>
 
-        return Observable.empty<Book>()
-    }
+        if (book.ownerId == user.id) {
+            document = documentsCache.getDocumentById(book.id)
+                    .switchIfEmpty(documentFromServerById(book.id, accessToken))
+        } else {
+            document = documentsApi.addDocument(book.ownerId, book.id, accessToken)
+                    .flatMap { documentFromServerById(it.response!!, accessToken) }
 
-    private fun saveInInternalStorage(book: Book): Observable<String> {
-        if (book.remoteURI == null) {
-            return Observable.empty()
         }
-        return Observable.create(Observable.OnSubscribe<String> {
-            val localURI = Environment.getExternalStorageDirectory().toString() + "/bookcrossing/" + book.title;
-            try {
-                saveInInternalStorage(localURI, book.remoteURI)
-                it.onNext(localURI)
-            } catch (e: Exception) {
-                it.onError(e)
-            } finally {
-                it.onCompleted()
-            }
-        });
+
+        return document
+                .flatMap { documentsCache.saveInInternalStorage(it) }
+                .map { mapToBook(it) }
     }
 
-    private fun saveInInternalStorage(localURI: String, remoteURI: String) {
-        val u = URL(remoteURI);
-        val conn = u.openConnection();
-        val contentLength = conn.getContentLength();
-
-        val stream = DataInputStream(u.openStream())
-
-        val buffer = ByteArray(contentLength)
-        stream.readFully(buffer)
-        stream.close()
-
-        val fos = DataOutputStream(FileOutputStream(File(localURI)))
-        fos.write(buffer)
-        fos.flush()
-        fos.close()
+    private fun documentFromServerById(id: Long, accessToken: String): Observable<DocumentDto> {
+        return documentsApi.getDocumentsById(setOf(id), accessToken).map { it.response?.items?.first() }
     }
 
 
     private fun Observable<List<DocumentDto>>.mapToBook(): Observable<List<Book>> {
         return this.map {
-            it.map {
-                Book(it.id,
-                        it.title ?: "no name",
-                        getFormat(it.ext),
-                        it.owerId,
-                        it.dir,
-                        it.url)
-            }.filter { !it.format.equals(Book.Format.NONAME) }
+            it.map { mapToBook(it) }.filter { it.format != Book.Format.NONAME }
         }
     }
 
-    private fun convert(book: Book, localURI: String): DocumentDto {
-        val dto = DocumentDto()
-        dto.url = book.remoteURI;
-        dto.accessKey
-        dto.date
-        dto.dir = localURI;
-        dto.ext
-        dto.folder = "main";//todo default folder
-        dto.owerId //todo I'm
-        dto.title = book.title
-        dto.id = book.id
-        dto.size
-        dto.type
-        return dto;
+    private fun mapToBook(it: DocumentDto): Book {
+        return Book(it.id,
+                it.title ?: "no name",
+                getFormat(it.ext),
+                it.owerId,
+                it.downloaded,
+                it.url)
     }
-
 
     private fun getFormat(ext: String?): Book.Format {
         when (ext) {
