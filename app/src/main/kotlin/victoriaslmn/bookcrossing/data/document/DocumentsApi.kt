@@ -13,19 +13,19 @@ interface DocumentsApi {
                         @Query("count") count: Int,
                         @Query("offset") offset: Int,
                         @Query("access_token") accessToken: String,
-                        @Query("v") version:String = "5.45" ): Observable<VkResponse<PagingResponse<DocumentDto>>>
+                        @Query("v") version: String = "5.45"): Observable<VkResponse<PagingResponse<DocumentDto>>>
 
     @GET("docs.getById")
-    fun getDocumentsById(@Query("docs") ids: Set<Long>,
+    fun getDocumentsById(@Query("docs") ownerId_docId: Set<String>,
                          @Query("access_token") accessToken: String,
-                         @Query("v") version:String = "5.45"): Observable<VkResponse<PagingResponse<DocumentDto>>>
+                         @Query("v") version: String = "5.45"): Observable<VkResponse<List<DocumentDto>>>
 
     @GET("docs.get")
     fun getDocumentsByUser(@Query("owner_id") ownerId: Long,
                            @Query("count") count: Int,
                            @Query("offset") offset: Int,
                            @Query("access_token") accessToken: String,
-                           @Query("v") version:String = "5.45"): Observable<VkResponse<PagingResponse<DocumentDto>>>
+                           @Query("v") version: String = "5.45"): Observable<VkResponse<PagingResponse<DocumentDto>>>
 
     @GET("docs.getUploadServer")
     fun getUploadServer(): Observable<VkResponse<UploadServerDto>>
@@ -53,6 +53,7 @@ interface DocumentsApi {
     @GET("docs.add")
     fun addDocument(@Query("owner_id") ownerId: Long,
                     @Query("doc_id") docId: Long,
-                    @Query("access_key") accessKey: String,
-                    @Query("v") version:String = "5.45"): Observable<VkResponse<Long>>
+                    @Query("access_key") accessKey: String?,
+                    @Query("access_token") accessToken: String,
+                    @Query("v") version: String = "5.45"): Observable<VkResponse<Long>>
 }

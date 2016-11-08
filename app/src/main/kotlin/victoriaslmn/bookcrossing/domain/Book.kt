@@ -5,8 +5,9 @@ data class Book(val id: Long,
                 val format: Format,
                 val ownerId: Long,
                 var downloaded: Boolean,
-                val remoteURI: String?) {
-    enum class Format{
+                val remoteURI: String?,
+                val accessKey: String?) {
+    enum class Format {
         NONAME, TXT, RTF, PDF, FB2, EPUB, DOC, DOCX
     }
 }

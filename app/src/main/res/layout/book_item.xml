@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="2dp"
-    android:orientation="horizontal"
     android:background="@color/vk_white"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
 
     <TextView
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_width="0dp"
         android:id="@+id/bookType"
         style="@style/small_text"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="PDF" />
+        tools:text="PD111F" />
 
     <View
         android:id="@+id/item_divider"
@@ -25,14 +25,14 @@
     <TextView
         android:id="@+id/bookDescription"
         style="@style/regular_text"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="4"
-        android:gravity="center_vertical"
-        android:padding="@dimen/padding_16"
-        android:layout_width="0dp"
         android:ellipsize="end"
+        android:gravity="center_vertical"
         android:lines="2"
-        android:text="Война и мир Война и мир Война и мир Война и мир Война и мир Война и мир " />
+        android:padding="@dimen/padding_16"
+        tools:text="Война и мир Война и мир Война и мир Война и мир Война и мир Война и мир " />
 
     <ImageView
         android:id="@+id/bookDownload"

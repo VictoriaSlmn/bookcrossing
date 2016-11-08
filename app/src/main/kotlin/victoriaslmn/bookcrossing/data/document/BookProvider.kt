@@ -6,36 +6,61 @@ import victoriaslmn.bookcrossing.domain.User
 
 class BookProvider(val documentsApi: DocumentsApi, val documentsCache: DocumentsCache) {
 
-    val PAGE_SIZE = 20;
+    val PAGE_SIZE = 20
 
     fun searchBooks(mask: String, page: Int, accessToken: String?): Observable<List<Book>> { //todo Page Object
+        val findInCache = documentsCache.getMyDocuments()
+                .flatMapIterable { it }
+                .filter { it.title?.contains(mask, true) } //todo delete duplicates
+                .toList()
+
         if (accessToken == null) {
-            return documentsCache.getMyDocuments()
-                    .flatMapIterable { it }
-                    .filter { it.title?.contains(mask, true) } //todo delete duplicates
-                    .toList()
-                    .mapToBook()
+            return findInCache.mapToBook()
         }
-        return documentsApi
+        return Observable.zip(documentsApi
                 .searchDocuments(mask, PAGE_SIZE, PAGE_SIZE * page, accessToken)
                 .map { it.response?.items ?: emptyList<DocumentDto>() }
-                .onExceptionResumeNext(documentsCache.getMyDocuments()
-                        .flatMapIterable { it }
-                        .filter { it.title?.contains(mask, true) }//todo delete duplicates
-                        .toList())
-                .mapToBook()
+                .onExceptionResumeNext(Observable.just(emptyList())),
+                findInCache,
+                mergeApiAndCacheBook { fromApi, fromCache -> fromApi.title == fromCache.title }).mapToBook()
     }
 
     fun getBooksByUser(user: User?, page: Int, accessToken: String?): Observable<List<Book>> {//todo Page Object
+        val myDocuments = documentsCache.getMyDocuments()
         if (user == null || accessToken == null) {
-            return documentsCache.getMyDocuments().mapToBook()//todo delete duplicates
+            return myDocuments.mapToBook()
         }
-        return documentsApi.getDocumentsByUser(user.id, PAGE_SIZE, PAGE_SIZE * page, accessToken)
-                .flatMapIterable { it.response?.items!! }
+
+        return Observable.zip(
+                documentsApi.getDocumentsByUser(user.id, PAGE_SIZE, PAGE_SIZE * page, accessToken)
+                        .map { it.response?.items!! }
+                        .onExceptionResumeNext(Observable.just(emptyList())),
+                myDocuments,
+                mergeApiAndCacheBook { fromApi, fromCache -> fromApi.id == fromCache.id })
+                .flatMapIterable { it -> it }
                 .doOnNext { documentsCache.updateDocument(it) }
                 .toList()
-                .onExceptionResumeNext(documentsCache.getMyDocuments())
                 .mapToBook()
+    }
+
+    fun mergeApiAndCacheBook(predicate: (DocumentDto, DocumentDto) -> Boolean): (List<DocumentDto>, List<DocumentDto>) -> List<DocumentDto> {
+        val mergeApiAndCacheBook: (List<DocumentDto>, List<DocumentDto>) -> List<DocumentDto> = {
+            fromApi, fromCache ->
+            if (fromApi.isEmpty()) {
+                fromCache
+            } else {
+                fromApi.map {
+                    fromApi ->
+                    val sameFromCache = fromCache.findLast({ predicate(fromApi, it) })
+                    if (sameFromCache != null) {
+                        fromApi.downloaded = true
+                    }
+                    fromApi
+                }
+            }
+        }
+
+        return mergeApiAndCacheBook
     }
 
     fun downloadBook(book: Book, user: User, accessToken: String): Observable<Book> {
@@ -43,11 +68,10 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
 
         if (book.ownerId == user.id) {
             document = documentsCache.getDocumentById(book.id)
-                    .switchIfEmpty(documentFromServerById(book.id, accessToken))
+                    .switchIfEmpty(documentFromServerById("${user.id}_${book.id}", accessToken))
         } else {
-            document = documentsApi.addDocument(book.ownerId, book.id, accessToken)
-                    .flatMap { documentFromServerById(it.response!!, accessToken) }
-
+            document = documentsApi.addDocument(book.ownerId, book.id, book.accessKey, accessToken)
+                    .flatMap { documentFromServerById("${user.id}_${it.response!!}", accessToken) }
         }
 
         return document
@@ -55,8 +79,8 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
                 .map { mapToBook(it) }
     }
 
-    private fun documentFromServerById(id: Long, accessToken: String): Observable<DocumentDto> {
-        return documentsApi.getDocumentsById(setOf(id), accessToken).map { it.response?.items?.first() }
+    private fun documentFromServerById(id: String, accessToken: String): Observable<DocumentDto> {
+        return documentsApi.getDocumentsById(setOf(id), accessToken).map { it.response?.first() }
     }
 
 
@@ -72,7 +96,8 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
                 getFormat(it.ext),
                 it.owerId,
                 it.downloaded,
-                it.url)
+                it.url,
+                it.accessKey)
     }
 
     private fun getFormat(ext: String?): Book.Format {

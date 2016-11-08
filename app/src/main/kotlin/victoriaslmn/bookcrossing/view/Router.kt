@@ -34,6 +34,7 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
 
         currentRecycleViewPresenter = MyBooksPresenter(recyclerView, bookProvider, userProvider, { openBook(it) })
         currentRecycleViewPresenter.init()
+        currentRecycleViewPresenter.searchMode = false
 
         val fab = activity.findViewById(R.id.fab) as FloatingActionButton
         fab.setOnClickListener { currentRecycleViewPresenter.addAction() }
@@ -55,6 +56,7 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
                 }
             }
             currentRecycleViewPresenter.init()
+            currentRecycleViewPresenter.searchMode = false
             navigationViewPresenter.closeDrawer()
             return true
         }
@@ -64,7 +66,9 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
         override fun onQueryTextChange(query: String?): Boolean {
             if (query == null || query.length == 0) {
                 currentRecycleViewPresenter.init()
+                currentRecycleViewPresenter.searchMode = false
             } else {
+                currentRecycleViewPresenter.searchMode = true
                 currentRecycleViewPresenter.search(query)
             }
             return true

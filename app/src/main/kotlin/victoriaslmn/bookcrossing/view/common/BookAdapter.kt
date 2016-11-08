@@ -41,8 +41,14 @@ class BookAdapter(val books: List<Book>,
         }
     }
 
-    fun updateBookDownloadedFlag(value: Book) {
-        val position = books.indexOfFirst { it.id == value.id }
+    fun updateBookDownloadedFlag(value: Book, searchMode: Boolean) {
+        val position = books.indexOfFirst {
+            if (searchMode) {
+                it.title == value.title
+            } else {
+                it.id == value.id
+            }
+        }
         books.get(position).downloaded = value.downloaded
         notifyItemChanged(position)
     }

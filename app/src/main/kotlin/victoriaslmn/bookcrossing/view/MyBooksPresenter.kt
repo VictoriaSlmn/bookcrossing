@@ -71,7 +71,7 @@ class MyBooksPresenter(val recyclerView: RecyclerView,
                 }.execute {
             dataLoadedAction(it, {
                 value ->
-                (recyclerView.adapter as BookAdapter).updateBookDownloadedFlag(value)
+                (recyclerView.adapter as BookAdapter).updateBookDownloadedFlag(value, searchMode)
             })
         }
     }
