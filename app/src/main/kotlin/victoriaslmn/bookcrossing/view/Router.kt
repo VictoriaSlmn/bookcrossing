@@ -1,5 +1,7 @@
 package victoriaslmn.bookcrossing.view
 
+import android.content.Intent
+import android.net.Uri
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.NavigationView
 import android.support.v7.widget.LinearLayoutManager
@@ -10,7 +12,9 @@ import victoriaslmn.bookcrossing.MainActivity
 import victoriaslmn.bookcrossing.R
 import victoriaslmn.bookcrossing.data.document.BookProvider
 import victoriaslmn.bookcrossing.data.user.UserProvider
+import victoriaslmn.bookcrossing.domain.Book
 import victoriaslmn.bookcrossing.view.common.RecycleViewPresenter
+import java.io.File
 
 
 class Router(val activity: MainActivity, val userProvider: UserProvider, val bookProvider: BookProvider) {
@@ -28,7 +32,7 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
         recyclerView = activity.findViewById(R.id.recycler_view) as RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(activity)
 
-        currentRecycleViewPresenter = MyBooksPresenter(recyclerView, bookProvider, userProvider)
+        currentRecycleViewPresenter = MyBooksPresenter(recyclerView, bookProvider, userProvider, { openBook(it) })
         currentRecycleViewPresenter.init()
 
         val fab = activity.findViewById(R.id.fab) as FloatingActionButton
@@ -45,7 +49,7 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
                 R.id.nav_friends -> {
                 }
                 R.id.nav_main -> {
-                    currentRecycleViewPresenter = MyBooksPresenter(recyclerView, bookProvider, userProvider)
+                    currentRecycleViewPresenter = MyBooksPresenter(recyclerView, bookProvider, userProvider, { openBook(it) })
                 }
                 R.id.nav_recommendations -> {
                 }
@@ -77,5 +81,20 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
 
     fun showAuthError() {
         navigationViewPresenter.showError(R.string.auth_error, activity)
+    }
+
+    fun openBook(book: Book) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        val file = File(book.title)
+        val extension = android.webkit.MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString())
+        val mimetype = android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+        if (extension.equals("", ignoreCase = true) || mimetype == null) {
+            // if there is no extension or there is no definite mimetype, still try to open the file
+            intent.setDataAndType(Uri.fromFile(file), "text/*")
+        } else {
+            intent.setDataAndType(Uri.fromFile(file), mimetype)
+        }
+        // custom message for the intent
+        activity.startActivity(Intent.createChooser(intent, "Choose an Application:"))
     }
 }

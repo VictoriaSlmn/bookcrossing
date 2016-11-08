@@ -8,7 +8,10 @@ import kotlinx.android.synthetic.main.book_item.view.*
 import victoriaslmn.bookcrossing.R
 import victoriaslmn.bookcrossing.domain.Book
 
-class BookAdapter(val books: List<Book>, val downloadBook: (book: Book) -> Unit) : RecyclerView.Adapter<BookAdapter.BookViewHolder>() {
+class BookAdapter(val books: List<Book>,
+                  val downloadBook: (book: Book) -> Unit,
+                  val openBook: (book: Book) -> Unit) : RecyclerView.Adapter<BookAdapter.BookViewHolder>() {
+
     override fun onBindViewHolder(viewHolder: BookViewHolder, position: Int) {
         viewHolder.bind(books.get(position))
     }
@@ -28,6 +31,7 @@ class BookAdapter(val books: List<Book>, val downloadBook: (book: Book) -> Unit)
             itemView.bookDescription.text = book.title
             if (book.downloaded) {
                 itemView.bookDownload.visibility = View.GONE
+                itemView.setOnClickListener { openBook(book) }
             } else {
                 itemView.bookDownload.visibility = View.VISIBLE
                 itemView.bookDownload.setOnClickListener({

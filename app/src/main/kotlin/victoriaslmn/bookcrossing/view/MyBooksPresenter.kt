@@ -10,7 +10,11 @@ import victoriaslmn.bookcrossing.domain.Book
 import victoriaslmn.bookcrossing.view.common.BookAdapter
 import victoriaslmn.bookcrossing.view.common.RecycleViewPresenter
 
-class MyBooksPresenter(val recyclerView: RecyclerView, val bookProvider: BookProvider, val userProvider: UserProvider) : RecycleViewPresenter(recyclerView) {
+class MyBooksPresenter(val recyclerView: RecyclerView,
+                       val bookProvider: BookProvider,
+                       val userProvider: UserProvider,
+                       val openBook: (book: Book) -> Unit) : RecycleViewPresenter(recyclerView) {
+
     override fun search(query: String) {
         searchDocuments(query)
     }
@@ -52,7 +56,7 @@ class MyBooksPresenter(val recyclerView: RecyclerView, val bookProvider: BookPro
     }
 
     fun resolveBookList(value: List<Book>) {
-        recyclerView.adapter = BookAdapter(value, downloadDocumentAction()) //todo 2. save finding books as my
+        recyclerView.adapter = BookAdapter(value, downloadDocumentAction(), openBook)
     }
 
     private fun downloadDocumentAction(): (Book) -> Unit = {
