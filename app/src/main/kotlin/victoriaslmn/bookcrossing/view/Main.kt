@@ -1,9 +1,13 @@
 package victoriaslmn.bookcrossing.view
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.NavigationView
+import android.support.v4.app.ActivityCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
@@ -14,10 +18,9 @@ import victoriaslmn.bookcrossing.data.document.BookProvider
 import victoriaslmn.bookcrossing.data.user.UserProvider
 import victoriaslmn.bookcrossing.domain.Book
 import victoriaslmn.bookcrossing.view.common.RecycleViewPresenter
-import java.io.File
 
 
-class Router(val activity: MainActivity, val userProvider: UserProvider, val bookProvider: BookProvider) {
+class Main(val activity: MainActivity, val userProvider: UserProvider, val bookProvider: BookProvider) : Router {
 
     val navigationViewPresenter: NavigationViewPresenter
     val recyclerView: RecyclerView
@@ -32,7 +35,7 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
         recyclerView = activity.findViewById(R.id.recycler_view) as RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(activity)
 
-        currentRecycleViewPresenter = MyBooksPresenter(recyclerView, bookProvider, userProvider, { openBook(it) })
+        currentRecycleViewPresenter = MyBooksPresenter(recyclerView, bookProvider, userProvider, this)
         currentRecycleViewPresenter.init()
         currentRecycleViewPresenter.searchMode = false
 
@@ -50,7 +53,7 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
                 R.id.nav_friends -> {
                 }
                 R.id.nav_main -> {
-                    currentRecycleViewPresenter = MyBooksPresenter(recyclerView, bookProvider, userProvider, { openBook(it) })
+                    currentRecycleViewPresenter = MyBooksPresenter(recyclerView, bookProvider, userProvider, this@Main)
                 }
                 R.id.nav_recommendations -> {
                 }
@@ -83,22 +86,62 @@ class Router(val activity: MainActivity, val userProvider: UserProvider, val boo
         return navigationViewPresenter.authCallback
     }
 
-    fun showAuthError() {
+    override fun showAuthError() {
         navigationViewPresenter.showError(R.string.auth_error, activity)
     }
 
-    fun openBook(book: Book) {
+    override fun openBook(book: Book) {
         val intent = Intent(Intent.ACTION_VIEW)
-        val file = File(book.title)
-        val extension = android.webkit.MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString())
-        val mimetype = android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-        if (extension.equals("", ignoreCase = true) || mimetype == null) {
-            // if there is no extension or there is no definite mimetype, still try to open the file
-            intent.setDataAndType(Uri.fromFile(file), "text/*")
-        } else {
-            intent.setDataAndType(Uri.fromFile(file), mimetype)
+        val uri = Uri.parse(book.localURI)
+        val type = when (book.format) {
+            Book.Format.PDF -> "application/pdf"
+            Book.Format.DOC -> "application/msword"
+            Book.Format.DOCX -> "application/msword"
+            Book.Format.TXT -> "text/plain"
+            Book.Format.RTF -> "application/msword"
+            Book.Format.EPUB -> "application/epub+zip"
+            Book.Format.FB2 -> "*/*"
+            Book.Format.NONAME -> "*/*"
         }
+        intent.setDataAndType(uri, type)
         // custom message for the intent
         activity.startActivity(Intent.createChooser(intent, "Choose an Application:"))
+    }
+
+    override fun isStoragePermissionGranted(): Boolean {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (activity.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) === PackageManager.PERMISSION_GRANTED) {
+                return true
+            } else {
+                return false
+            }
+        } else {
+            return true
+        }
+    }
+
+    override fun requestStoragePermission(requestCode: PermissionRequestCode, callback: PermissionRequestCallback) {
+        ActivityCompat.requestPermissions(activity, arrayOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE), requestCode.code)
+        activity.setPermissionRequestCallback(callback)
+    }
+}
+
+interface Router {
+    fun showAuthError()
+    fun openBook(book: Book)
+    fun isStoragePermissionGranted(): Boolean
+    fun requestStoragePermission(requestCode: PermissionRequestCode, callback: PermissionRequestCallback)
+}
+
+interface PermissionRequestCallback {
+    fun allow(code: PermissionRequestCode)
+    fun deny(code: PermissionRequestCode)
+}
+
+enum class PermissionRequestCode(val code: Int) {
+    STORAGE(1);
+
+    companion object {
+        fun from(findCode: Int): PermissionRequestCode = PermissionRequestCode.values().first { it.code == findCode }
     }
 }

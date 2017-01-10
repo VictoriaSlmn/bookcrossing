@@ -1,9 +1,12 @@
 package victoriaslmn.bookcrossing.data.document
 
 import android.content.Context
+import android.os.Environment
 import com.j256.ormlite.dao.Dao
 import rx.Observable
 import java.io.DataInputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.net.URL
 
 class DocumentsCache(val documentsDao: Dao<DocumentDto, Long>, val context: Context) {
@@ -27,8 +30,7 @@ class DocumentsCache(val documentsDao: Dao<DocumentDto, Long>, val context: Cont
 
         return Observable.create({
             try {
-                loadAndSaveFileInInternalStorage(dto)
-                dto.downloaded = true
+                dto.localURI = loadAndSaveFileInDocumentDir(dto)
                 updateDocument(dto)
                 it.onNext(dto)
             } catch (e: Exception) {
@@ -39,7 +41,7 @@ class DocumentsCache(val documentsDao: Dao<DocumentDto, Long>, val context: Cont
         })
     }
 
-    private fun loadAndSaveFileInInternalStorage(dto: DocumentDto) {
+    private fun loadAndSaveFileInDocumentDir(dto: DocumentDto): String {
         val u = URL(dto.url)
         val conn = u.openConnection()
         val contentLength = conn.getContentLength()
@@ -50,8 +52,20 @@ class DocumentsCache(val documentsDao: Dao<DocumentDto, Long>, val context: Cont
         stream.readFully(buffer)
         stream.close()
 
-        val fOut = context.openFileOutput(dto.title, Context.MODE_PRIVATE)
-        fOut.write(buffer)
-        fOut.close()
+        val dir = File(Environment.getExternalStorageDirectory(), "Bookcrossing")
+        val dirExists = dir.exists() || dir.mkdirs()
+
+        if (!dirExists) {
+            throw RuntimeException("Couldn't create folder in external storage")
+        }
+
+        val documentFile = File(dir, dto.title)
+
+        val fos = FileOutputStream(documentFile)
+        fos.write(buffer)
+        fos.close()
+
+        return documentFile.absolutePath
     }
+
 }

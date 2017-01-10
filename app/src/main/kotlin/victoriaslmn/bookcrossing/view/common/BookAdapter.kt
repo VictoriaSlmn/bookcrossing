@@ -29,7 +29,7 @@ class BookAdapter(val books: List<Book>,
         fun bind(book: Book) {
             itemView.bookType.text = "${book.format}"
             itemView.bookDescription.text = book.title
-            if (book.downloaded) {
+            if (book.localURI != null) {
                 itemView.bookDownload.visibility = View.GONE
                 itemView.setOnClickListener { openBook(book) }
             } else {
@@ -49,7 +49,9 @@ class BookAdapter(val books: List<Book>,
                 it.id == value.id
             }
         }
-        books.get(position).downloaded = value.downloaded
+        val book = books.get(position)
+        book.localURI = value.localURI
+
         notifyItemChanged(position)
     }
 }

@@ -53,7 +53,7 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
                     fromApi ->
                     val sameFromCache = fromCache.findLast({ predicate(fromApi, it) })
                     if (sameFromCache != null) {
-                        fromApi.downloaded = true
+                        fromApi.localURI = sameFromCache.localURI
                     }
                     fromApi
                 }
@@ -95,7 +95,7 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
                 it.title ?: "no name",
                 getFormat(it.ext),
                 it.owerId,
-                it.downloaded,
+                it.localURI,
                 it.url,
                 it.accessKey)
     }

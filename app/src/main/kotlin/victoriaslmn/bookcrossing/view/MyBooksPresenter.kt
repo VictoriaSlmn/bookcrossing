@@ -13,7 +13,7 @@ import victoriaslmn.bookcrossing.view.common.RecycleViewPresenter
 class MyBooksPresenter(val recyclerView: RecyclerView,
                        val bookProvider: BookProvider,
                        val userProvider: UserProvider,
-                       val openBook: (book: Book) -> Unit) : RecycleViewPresenter(recyclerView) {
+                       val router: Router) : RecycleViewPresenter(recyclerView) {
 
     override fun search(query: String) {
         searchDocuments(query)
@@ -56,16 +56,15 @@ class MyBooksPresenter(val recyclerView: RecyclerView,
     }
 
     fun resolveBookList(value: List<Book>) {
-        recyclerView.adapter = BookAdapter(value, downloadDocumentAction(), openBook)
+        recyclerView.adapter = BookAdapter(value, tryDownloadDocument(), { book -> router.openBook(book) })
     }
 
-    private fun downloadDocumentAction(): (Book) -> Unit = {
+    private fun downloadDocumentAction(book: Book) {
 
         //todo start loading
-
         getUserAndAccesskey()
                 .flatMap { userAndAccesskey ->
-                    bookProvider.downloadBook(it,
+                    bookProvider.downloadBook(book,
                             userAndAccesskey.first!!, //todo auth exception
                             userAndAccesskey.second!!)
                 }.execute {
@@ -75,4 +74,28 @@ class MyBooksPresenter(val recyclerView: RecyclerView,
             })
         }
     }
+
+    private fun tryDownloadDocument(): (Book) -> Unit = {
+        if (!router.isStoragePermissionGranted()) {
+            router.requestStoragePermission(PermissionRequestCode.STORAGE, RequestStoragePermissionCallback(it))
+        }
+        downloadDocumentAction(it)
+    }
+
+    inner class RequestStoragePermissionCallback(val book: Book) : PermissionRequestCallback {
+        override fun deny(code: PermissionRequestCode) {
+            when (code) {
+                PermissionRequestCode.STORAGE -> showError(R.string.need_permission_message, recyclerView.context)
+            }
+        }
+
+        override fun allow(code: PermissionRequestCode) {
+            when (code) {
+                PermissionRequestCode.STORAGE -> downloadDocumentAction(book)
+            }
+        }
+
+    }
 }
+
+

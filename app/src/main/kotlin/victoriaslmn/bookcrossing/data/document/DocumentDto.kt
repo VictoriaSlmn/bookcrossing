@@ -56,6 +56,6 @@ class DocumentDto {
     @DatabaseField(columnName = "folder")
     var folder: String? = null
 
-    @DatabaseField(columnName = "downloaded")
-    var downloaded: Boolean = false
+    @DatabaseField(columnName = "local_uri")
+    var localURI: String? = null
 }
