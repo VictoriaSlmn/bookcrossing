@@ -18,6 +18,7 @@ import victoriaslmn.bookcrossing.data.document.BookProvider
 import victoriaslmn.bookcrossing.data.user.UserProvider
 import victoriaslmn.bookcrossing.domain.Book
 import victoriaslmn.bookcrossing.view.common.RecycleViewPresenter
+import java.io.File
 
 
 class Main(val activity: MainActivity, val userProvider: UserProvider, val bookProvider: BookProvider) : Router {
@@ -92,7 +93,7 @@ class Main(val activity: MainActivity, val userProvider: UserProvider, val bookP
 
     override fun openBook(book: Book) {
         val intent = Intent(Intent.ACTION_VIEW)
-        val uri = Uri.parse(book.localURI)
+        val uri = Uri.fromFile(File(book.localURI))
         val type = when (book.format) {
             Book.Format.PDF -> "application/pdf"
             Book.Format.DOC -> "application/msword"
