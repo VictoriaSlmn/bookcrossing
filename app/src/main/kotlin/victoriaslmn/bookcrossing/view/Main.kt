@@ -105,7 +105,6 @@ class Main(val activity: MainActivity, val userProvider: UserProvider, val bookP
             Book.Format.NONAME -> "*/*"
         }
         intent.setDataAndType(uri, type)
-        // custom message for the intent
         activity.startActivity(Intent.createChooser(intent, "Choose an Application:"))
     }
 
