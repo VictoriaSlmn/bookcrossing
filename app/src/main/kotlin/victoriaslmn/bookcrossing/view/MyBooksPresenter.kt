@@ -8,6 +8,7 @@ import victoriaslmn.bookcrossing.data.document.BookProvider
 import victoriaslmn.bookcrossing.data.user.UserProvider
 import victoriaslmn.bookcrossing.domain.Book
 import victoriaslmn.bookcrossing.view.common.BookAdapter
+import victoriaslmn.bookcrossing.view.common.EmptyAdapter
 import victoriaslmn.bookcrossing.view.common.RecycleViewPresenter
 
 class MyBooksPresenter(val recyclerView: RecyclerView,
@@ -56,7 +57,11 @@ class MyBooksPresenter(val recyclerView: RecyclerView,
     }
 
     fun resolveBookList(value: List<Book>) {
-        recyclerView.adapter = BookAdapter(value, tryDownloadDocument(), { book -> router.openBook(book) })
+        if (value.isEmpty()) {
+            recyclerView.adapter = EmptyAdapter(R.layout.you_have_no_one_book)
+        } else {
+            recyclerView.adapter = BookAdapter(value, tryDownloadDocument(), { book -> router.openBook(book) })
+        }
     }
 
     private fun downloadDocumentAction(book: Book) {
@@ -97,5 +102,6 @@ class MyBooksPresenter(val recyclerView: RecyclerView,
 
     }
 }
+
 
 

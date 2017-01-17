@@ -15,7 +15,7 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
                 .toList()
 
         if (accessToken == null) {
-            return findInCache.mapToBook()
+            return filterCacheForOnlineWork(findInCache)
         }
         return Observable.zip(documentsApi
                 .searchDocuments(mask, PAGE_SIZE, PAGE_SIZE * page, accessToken)
@@ -28,7 +28,7 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
     fun getBooksByUser(user: User?, page: Int, accessToken: String?): Observable<List<Book>> {//todo Page Object
         val myDocuments = documentsCache.getMyDocuments()
         if (user == null || accessToken == null) {
-            return myDocuments.mapToBook()
+            return filterCacheForOnlineWork(myDocuments)
         }
 
         return Observable.zip(
@@ -43,7 +43,14 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
                 .mapToBook()
     }
 
-    fun mergeApiAndCacheBook(predicate: (DocumentDto, DocumentDto) -> Boolean): (List<DocumentDto>, List<DocumentDto>) -> List<DocumentDto> {
+    private fun filterCacheForOnlineWork(documents: Observable<List<DocumentDto>>): Observable<List<Book>> {
+        return documents.flatMapIterable { it }
+                .filter { it.localURI != null }
+                .toList()
+                .mapToBook()
+    }
+
+    private fun mergeApiAndCacheBook(predicate: (DocumentDto, DocumentDto) -> Boolean): (List<DocumentDto>, List<DocumentDto>) -> List<DocumentDto> {
         val mergeApiAndCacheBook: (List<DocumentDto>, List<DocumentDto>) -> List<DocumentDto> = {
             fromApi, fromCache ->
             if (fromApi.isEmpty()) {

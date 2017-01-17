@@ -23,7 +23,8 @@ import victoriaslmn.bookcrossing.view.common.CircleTransform
 
 class NavigationViewPresenter(val activity: MainActivity,
                               val userProvider: UserProvider,
-                              val navigationItemSelectedListener: NavigationView.OnNavigationItemSelectedListener) : BasePresenter() {
+                              val navigationItemSelectedListener: NavigationView.OnNavigationItemSelectedListener,
+                              val authAction: () -> Unit) : BasePresenter() {
 
     val drawerLayout: DrawerLayout
     val navView: NavigationView
@@ -85,6 +86,7 @@ class NavigationViewPresenter(val activity: MainActivity,
             activity.getMenuInflater().inflate(R.menu.activity_main_auth_drawer, menu)
             header.setOnClickListener(null)
         }
+        authAction.invoke()
     }
 
     fun closeDrawer() {

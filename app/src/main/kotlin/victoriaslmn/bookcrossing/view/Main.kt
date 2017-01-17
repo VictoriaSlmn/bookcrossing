@@ -30,9 +30,6 @@ class Main(val activity: MainActivity, val userProvider: UserProvider, val bookP
     val onQueryTextListener = SearchOnQueryTextListener()
 
     init {
-        navigationViewPresenter = NavigationViewPresenter(activity, userProvider, Navigation())
-        navigationViewPresenter.init()
-
         recyclerView = activity.findViewById(R.id.recycler_view) as RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(activity)
 
@@ -42,6 +39,9 @@ class Main(val activity: MainActivity, val userProvider: UserProvider, val bookP
 
         val fab = activity.findViewById(R.id.fab) as FloatingActionButton
         fab.setOnClickListener { currentRecycleViewPresenter.addAction() }
+
+        navigationViewPresenter = NavigationViewPresenter(activity, userProvider, Navigation(), { currentRecycleViewPresenter.init() })
+        navigationViewPresenter.init()
     }
 
 
