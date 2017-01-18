@@ -3,6 +3,7 @@ package victoriaslmn.bookcrossing.data.document
 import rx.Observable
 import victoriaslmn.bookcrossing.domain.Book
 import victoriaslmn.bookcrossing.domain.User
+import java.io.File
 
 class BookProvider(val documentsApi: DocumentsApi, val documentsCache: DocumentsCache) {
 
@@ -118,6 +119,16 @@ class BookProvider(val documentsApi: DocumentsApi, val documentsCache: Documents
             "docx" -> return Book.Format.DOCX
         }
         return Book.Format.NONAME
+    }
+
+    fun uploadFile(file: File, accessToken: String): Observable<Book> {
+        return documentsApi.getUploadServer(accessToken)
+                .concatMap { DocumentsUpload.uploadFile(file, it.response?.uploadUrl!!) }
+                .concatMap { documentsApi.saveDocument(it.file, file.name, accessToken) }
+                .flatMapIterable { it.response }
+                .first()
+                .doOnNext { documentsCache.updateDocument(it) }
+                .map { mapToBook(it) }
     }
 }
 

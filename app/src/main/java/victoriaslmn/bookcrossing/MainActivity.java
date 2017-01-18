@@ -26,6 +26,8 @@ import victoriaslmn.bookcrossing.data.document.DocumentsCache;
 import victoriaslmn.bookcrossing.data.user.UserApi;
 import victoriaslmn.bookcrossing.data.user.UserCache;
 import victoriaslmn.bookcrossing.data.user.UserProvider;
+import victoriaslmn.bookcrossing.view.ActivityResultCallback;
+import victoriaslmn.bookcrossing.view.ActivityResultRequestCode;
 import victoriaslmn.bookcrossing.view.Main;
 import victoriaslmn.bookcrossing.view.PermissionRequestCallback;
 import victoriaslmn.bookcrossing.view.PermissionRequestCode;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private Main main;
     private OrmLiteSqlite ormLiteSqlite;
     private PermissionRequestCallback permissionRequestCallback;
+    private ActivityResultCallback activityResultCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +84,11 @@ public class MainActivity extends AppCompatActivity {
         if (VKSdk.onActivityResult(requestCode, resultCode, data, main.getAuthCallback())) {
             return;
         }
-        main.showAuthError();
+        if (activityResultCallback == null) {
+            return;
+        }
+        ActivityResultRequestCode resultRequestCode = ActivityResultRequestCode.Companion.from(requestCode);
+        activityResultCallback.onActivityResult(resultRequestCode, data);
     }
 
     @Override
@@ -96,6 +103,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void setPermissionRequestCallback(@NotNull PermissionRequestCallback callback) {
         permissionRequestCallback = callback;
+    }
+
+    public void setActivityResultCallback(ActivityResultCallback activityResultCallback) {
+        this.activityResultCallback = activityResultCallback;
     }
 
     @Override

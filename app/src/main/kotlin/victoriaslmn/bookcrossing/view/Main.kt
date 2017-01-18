@@ -17,6 +17,7 @@ import victoriaslmn.bookcrossing.R
 import victoriaslmn.bookcrossing.data.document.BookProvider
 import victoriaslmn.bookcrossing.data.user.UserProvider
 import victoriaslmn.bookcrossing.domain.Book
+import victoriaslmn.bookcrossing.view.common.FileUtils
 import victoriaslmn.bookcrossing.view.common.RecycleViewPresenter
 import java.io.File
 
@@ -87,10 +88,6 @@ class Main(val activity: MainActivity, val userProvider: UserProvider, val bookP
         return navigationViewPresenter.authCallback
     }
 
-    override fun showAuthError() {
-        navigationViewPresenter.showError(R.string.auth_error, activity)
-    }
-
     override fun openBook(book: Book) {
         val intent = Intent(Intent.ACTION_VIEW)
         val uri = Uri.fromFile(File(book.localURI))
@@ -124,18 +121,56 @@ class Main(val activity: MainActivity, val userProvider: UserProvider, val bookP
         ActivityCompat.requestPermissions(activity, arrayOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE), requestCode.code)
         activity.setPermissionRequestCallback(callback)
     }
+
+    override fun showFileChooser(fileChoose: (File?) -> Unit) {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "*/*"
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        try {
+            activity.setActivityResultCallback(FileChooseCallback(fileChoose))
+            activity.startActivityForResult(
+                    Intent.createChooser(intent, activity.getString(R.string.file_chooser_title)),
+                    ActivityResultRequestCode.FILE_SELECT.code)
+        } catch (ex: android.content.ActivityNotFoundException) {
+            navigationViewPresenter.showError(R.string.file_chooser_error, activity)
+        }
+    }
+
+    inner class FileChooseCallback(val fileChoose: (File?) -> Unit) : ActivityResultCallback {
+        override fun onActivityResult(requestCode: ActivityResultRequestCode, data: Intent) {
+            if (requestCode === ActivityResultRequestCode.FILE_SELECT) {
+                val path = FileUtils.getPath(activity, data.data)
+                val file = if (path == null) null else File(path)
+                fileChoose(file)
+            } else {
+                fileChoose(null)
+            }
+        }
+    }
 }
 
 interface Router {
-    fun showAuthError()
     fun openBook(book: Book)
     fun isStoragePermissionGranted(): Boolean
     fun requestStoragePermission(requestCode: PermissionRequestCode, callback: PermissionRequestCallback)
+    fun showFileChooser(fileChoose: (File?) -> Unit)
 }
 
 interface PermissionRequestCallback {
     fun allow(code: PermissionRequestCode)
     fun deny(code: PermissionRequestCode)
+}
+
+interface ActivityResultCallback {
+    fun onActivityResult(requestCode: ActivityResultRequestCode, data: Intent)
+}
+
+enum class ActivityResultRequestCode(val code: Int) {
+    FILE_SELECT(1);
+
+    companion object {
+        fun from(findCode: Int): ActivityResultRequestCode = ActivityResultRequestCode.values().first { it.code == findCode }
+    }
 }
 
 enum class PermissionRequestCode(val code: Int) {

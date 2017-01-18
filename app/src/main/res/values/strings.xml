@@ -19,5 +19,7 @@
     <string name="no_one_book"> <b> Не найдено ни одной книги для отображения :( </b> </string>
     <string name="auth_or_add_new_book"> Авторизуйтесь в VK для\u00A0синхронизации\u00A0документов \n
     или добавьте новую книгу, используя кнопку в\u00A0правом\u00A0нижнем\u00A0углу</string>
+    <string name="file_chooser_error">Установите файловый менеджер!</string>
+    <string name="file_chooser_title">Выберите книгу</string>
     <integer name="com_vk_sdk_AppId">5278883</integer>
 </resources>

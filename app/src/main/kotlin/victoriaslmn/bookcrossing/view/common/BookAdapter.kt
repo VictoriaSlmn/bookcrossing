@@ -8,7 +8,7 @@ import kotlinx.android.synthetic.main.book_item.view.*
 import victoriaslmn.bookcrossing.R
 import victoriaslmn.bookcrossing.domain.Book
 
-class BookAdapter(val books: List<Book>,
+class BookAdapter(val books: MutableList<Book>,
                   val downloadBook: (book: Book) -> Unit,
                   val openBook: (book: Book) -> Unit) : RecyclerView.Adapter<BookAdapter.BookViewHolder>() {
 
@@ -19,6 +19,11 @@ class BookAdapter(val books: List<Book>,
     override fun onCreateViewHolder(parent: ViewGroup, itemType: Int): BookViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.book_item, parent, false)
         return BookViewHolder(view)
+    }
+
+    fun addBook(book: Book) {
+        books.add(0, book)
+        notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int {

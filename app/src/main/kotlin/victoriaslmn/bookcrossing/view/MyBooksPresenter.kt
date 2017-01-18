@@ -1,5 +1,6 @@
 package victoriaslmn.bookcrossing.view
 
+import android.accounts.AuthenticatorException
 import android.support.v7.widget.RecyclerView
 import rx.Notification
 import rx.Observable
@@ -30,7 +31,36 @@ class MyBooksPresenter(val recyclerView: RecyclerView,
             { user, assesToken -> Pair(user, assesToken) })
 
     override fun addAction() {
-        //todo 3. download new book from file and find in internet?
+        router.showFileChooser {
+            file ->
+            if (file == null) {
+                showError(R.string.download_error, recyclerView.context) //todo other error message
+            } else {
+                userProvider.getAccessToken().flatMap { accessToken ->
+                    if (accessToken != null) {
+                        bookProvider.uploadFile(file, accessToken)
+                    } else {
+                        Observable.error<Book>(AuthenticatorException())
+                    }
+                }.execute {
+                    when (it.kind) {
+                        Notification.Kind.OnError -> {
+                            if (it.throwable is AuthenticatorException) {
+                                showError(R.string.auth_error, recyclerView.context)
+                            } else {
+                                it.throwable.printStackTrace()
+                                showError(R.string.download_error, recyclerView.context) //todo other error message
+                            }
+                        }
+                        Notification.Kind.OnNext -> (recyclerView.adapter as BookAdapter).addBook(it.value)
+                        else -> {
+                        }
+                    }
+                }
+            }
+        }
+
+
     }
 
 
@@ -60,7 +90,7 @@ class MyBooksPresenter(val recyclerView: RecyclerView,
         if (value.isEmpty()) {
             recyclerView.adapter = EmptyAdapter(R.layout.you_have_no_one_book)
         } else {
-            recyclerView.adapter = BookAdapter(value, tryDownloadDocument(), { book -> router.openBook(book) })
+            recyclerView.adapter = BookAdapter(value.toMutableList(), tryDownloadDocument(), { book -> router.openBook(book) })
         }
     }
 
